@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS salaries;
+DROP TABLE IF EXISTS fielding;
 DROP TABLE IF EXISTS teams_franchises;
 DROP TABLE IF EXISTS batting;
 DROP TABLE IF EXISTS home_games;
@@ -9,23 +11,24 @@ DROP TABLE IF EXISTS people;
 DROP TABLE IF EXISTS teams;
 DROP TABLE IF EXISTS schools;
 DROP TABLE IF EXISTS parks;
+DROP TABLE IF EXISTS awards_players;
 
 CREATE TABLE parks (
-  park_key CHAR(5) PRIMARY KEY,
-  park_name VARCHAR(64),
+    park_key CHAR(5) PRIMARY KEY,
+   park_name VARCHAR(64),
   park_alias VARCHAR(64),
-  city VARCHAR(64),
-  state VARCHAR(32),
-  country CHAR(3)
+        city VARCHAR(64),
+       state VARCHAR(32),
+     country CHAR(3)
 );
 
 
 CREATE TABLE schools (
-  schoolID VARCHAR(64) PRIMARY KEY,
+   schoolID VARCHAR(64) PRIMARY KEY,
   name_full VARCHAR(255),
-  city VARCHAR(64),
-  state CHAR(2),
-  country CHAR(3)
+       city VARCHAR(64),
+      state CHAR(2),
+    country CHAR(3)
 );
 
 CREATE INDEX ON schools (city);
@@ -34,13 +37,13 @@ CREATE INDEX ON schools (name_full);
 
 
 CREATE TABLE teams (
-  yearID SMALLINT NOT NULL,
-  lgID CHAR(2) NOT NULL,
-  teamID CHAR(3) NOT NULL,
+    yearID SMALLINT NOT NULL,
+      lgID CHAR(2) NOT NULL,
+    teamID CHAR(3) NOT NULL,
   franchID CHAR(3),
-  divID VARCHAR(4),
-  Rank SMALLINT,
-  G SMALLINT,
+     divID VARCHAR(4),
+      Rank SMALLINT,
+         G SMALLINT,
   Ghome SMALLINT,
   W SMALLINT,
   L SMALLINT,
@@ -81,7 +84,8 @@ CREATE TABLE teams (
   PPF SMALLINT,
   teamIDBR varchar(32),
   teamIDlahman45 varchar(32),
-  teamIDretro varchar(32)
+  teamIDretro varchar(32),
+  PRIMARY KEY (teamID, yearID)
 );
 
 CREATE INDEX ON teams (teamID);
@@ -223,7 +227,7 @@ CREATE TABLE home_games (
 CREATE INDEX ON home_games(attendance);
 
 
-DROP TABLE IF EXISTS salaries;
+
 
 CREATE TABLE salaries (
   yearID SMALLINT NOT NULL,
@@ -309,6 +313,46 @@ CREATE INDEX ON pitching(yearID);
 CREATE INDEX ON pitching(teamID);
 CREATE INDEX ON pitching(ERA);
 
+
+
+CREATE TABLE fielding (
+  playerID varchar(32) REFERENCES people(playerID),
+  yearID SMALLINT NOT NULL,
+  stint SMALLINT,
+  teamID CHAR(3) NOT NULL,
+  lgID CHAR(2) NOT NULL,
+  POS VARCHAR(4),
+  G SMALLINT,
+  GS SMALLINT,
+  InnOuts SMALLINT,
+  PO SMALLINT,
+  A SMALLINT,
+  E SMALLINT,
+  DP SMALLINT,
+  PB SMALLINT,
+  WP SMALLINT,
+  SB SMALLINT,
+  CS SMALLINT,
+  ZR SMALLINT
+);
+
+
+
+CREATE TABLE awards_players (
+  playerID varchar(32) REFERENCES people(playerID),
+  awardID varchar(64) NOT NULL,
+  yearID SMALLINT NOT NULL,
+  lgID CHAR(2),
+  tie BOOLEAN,
+  notes varchar(32)
+);
+
+
+
+
+
+\COPY awards_players(playerID,awardID,yearID,lgID,tie,notes) FROM './core/AwardsPlayers.csv' WITH DELIMITER ',' CSV HEADER;
+\COPY fielding(playerID,yearID,stint,teamID,lgID,POS,G,GS,InnOuts,PO,A,E,DP,PB,WP,SB,CS,ZR) FROM './core/Fielding.csv' WITH DELIMITER ',' CSV HEADER;
 \COPY parks(park_key,park_name,park_alias,city,state,country) FROM './core/Parks.csv' WITH DELIMITER ',' CSV HEADER;
 \COPY schools(schoolID,name_full,city,state,country) FROM './core/Schools.csv' WITH DELIMITER ',' CSV HEADER;
 \COPY teams(yearID,lgID,teamID,franchID,divID,Rank,G,Ghome,W,L,DivWin,WCWin,LgWin,WSWin,R,AB,H,"2B","3B",HR,BB,SO,SB,CS,HBP,SF,RA,ER,ERA,CG,SHO,SV,IPouts,HA,HRA,BBA,SOA,E,DP,FP,name,park,attendance,BPF,PPF,teamIDBR,teamIDlahman45,teamIDretro) FROM './core/Teams.csv' WITH DELIMITER ',' CSV HEADER;
